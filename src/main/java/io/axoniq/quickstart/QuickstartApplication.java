@@ -1,11 +1,8 @@
 package io.axoniq.quickstart;
 
 import io.axoniq.quickstart.giftcard.domain.GiftCard;
-import org.axonframework.messaging.eventhandling.processing.streaming.token.store.TokenStore;
-import org.axonframework.messaging.eventhandling.processing.streaming.token.store.inmemory.InMemoryTokenStore;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -21,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *   <li><strong>Event Sourcing</strong>: Stores state changes as immutable events</li>
  *   <li><strong>Reactive Web Stack</strong>: Uses Spring WebFlux for non-blocking I/O</li>
  *   <li><strong>Real-time Updates</strong>: Implements Server-Sent Events for live UI updates</li>
- *   <li><strong>In-Memory Projections</strong>: Fast query performance with eventual consistency</li>
+ *   <li><strong>Persistent Projections</strong>: Disk-backed H2 read model with eventual consistency</li>
  * </ul>
  *
  * <p><strong>Key Components Enabled:</strong></p>
@@ -119,10 +116,5 @@ public class QuickstartApplication {
      */
     public static void main(String[] args) {
         SpringApplication.run(QuickstartApplication.class, args);
-    }
-
-    @Bean
-    public TokenStore tokenStore() {
-        return new InMemoryTokenStore();
     }
 }

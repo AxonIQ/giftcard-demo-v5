@@ -32,6 +32,17 @@
             <artifactId>axoniq-platform-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- JDBC + H2: disk-backed read-model projection and persistent JdbcTokenStore -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

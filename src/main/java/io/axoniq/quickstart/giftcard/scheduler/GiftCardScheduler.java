@@ -9,6 +9,7 @@ import org.axonframework.messaging.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.queryhandling.gateway.QueryGateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -67,6 +68,12 @@ import java.util.UUID;
  *   <li>Implementing more sophisticated error handling and monitoring</li>
  * </ul>
  *
+ * <p><strong>Enabling and disabling:</strong></p>
+ * <p>The scheduler is enabled by default. Set {@code giftcard.scheduler.enabled=false} (for example in
+ * {@code application.properties} or as a test property) to disable it entirely; when disabled, this component
+ * is not registered as a bean and no scheduled operations run. This is useful for tests that need a quiet
+ * event store without background activity.</p>
+ *
  * @author AxonIQ Quickstart
  * @version 1.0
  * @see IssueGiftCardCommand
@@ -75,6 +82,7 @@ import java.util.UUID;
  * @since 1.0
  */
 @Component
+@ConditionalOnProperty(name = "giftcard.scheduler.enabled", havingValue = "true", matchIfMissing = true)
 public class GiftCardScheduler {
 
     /**

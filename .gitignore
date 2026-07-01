@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# Maven build output
+/target/
+
+# H2 on-disk database (giftcard.projection read model + tracking tokens)
+/data/

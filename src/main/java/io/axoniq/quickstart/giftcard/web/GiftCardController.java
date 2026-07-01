@@ -2,6 +2,10 @@ package io.axoniq.quickstart.giftcard.web;
 
 import io.axoniq.quickstart.giftcard.command.IssueGiftCardCommand;
 import io.axoniq.quickstart.giftcard.command.RedeemGiftCardCommand;
+import io.axoniq.quickstart.giftcard.event.GiftCardIssuedEvent;
+import io.axoniq.quickstart.giftcard.event.GiftCardRedeemedEvent;
+import io.axoniq.quickstart.giftcard.eventlog.GiftCardBalance;
+import io.axoniq.quickstart.giftcard.eventlog.GiftCardEventReader;
 import io.axoniq.quickstart.giftcard.query.FindAllGiftCardsQuery;
 import io.axoniq.quickstart.giftcard.query.FindGiftCardQuery;
 import io.axoniq.quickstart.giftcard.query.GiftCardSummary;
@@ -94,15 +98,27 @@ public class GiftCardController {
     private final QueryGateway queryGateway;
 
     /**
+     * Reads the raw event history of a single gift card directly from the event store,
+     * bypassing the read-model projection.
+     */
+    private final GiftCardEventReader giftCardEventReader;
+
+    /**
      * Constructs a new GiftCardController with required Axon Framework gateways.
      *
-     * @param commandGateway the command gateway for dispatching commands
-     * @param queryGateway   the query gateway for executing queries and subscriptions
+     * @param commandGateway      the command gateway for dispatching commands
+     * @param converter           the converter used when reading serialized query updates
+     * @param queryGateway        the query gateway for executing queries and subscriptions
+     * @param giftCardEventReader the reader that sources a gift card's events directly from the event store
      */
-    public GiftCardController(CommandGateway commandGateway, Converter converter, QueryGateway queryGateway) {
+    public GiftCardController(CommandGateway commandGateway,
+                              Converter converter,
+                              QueryGateway queryGateway,
+                              GiftCardEventReader giftCardEventReader) {
         this.commandGateway = commandGateway;
         this.converter = converter;
         this.queryGateway = queryGateway;
+        this.giftCardEventReader = giftCardEventReader;
     }
 
     /**
@@ -237,6 +253,44 @@ public class GiftCardController {
                 .thenApply(giftCard -> giftCard != null
                         ? ResponseEntity.ok(giftCard)
                         : ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Calculates a gift card's current balance by folding its events, sourced directly from the event store.
+     *
+     * <p>In contrast to {@link #getGiftCard(String)}, which returns the balance maintained by the
+     * {@link io.axoniq.quickstart.giftcard.query.GiftCardProjection read-model projection}, this endpoint
+     * derives the balance on the fly: it sources the events tagged with the given {@code giftCardId} straight
+     * from the event store and folds them, adding each {@link GiftCardIssuedEvent} amount and subtracting each
+     * {@link GiftCardRedeemedEvent} amount. This demonstrates Dynamic Consistency Boundary (DCB) style event
+     * sourcing, where a value is computed from tagged events without a dedicated projection.</p>
+     *
+     * <p><strong>HTTP mapping:</strong> {@code GET /api/giftcards/{giftCardId}/balance}</p>
+     *
+     * <p><strong>Path variable:</strong> {@code giftCardId} - the unique identifier of the gift card</p>
+     *
+     * <p><strong>Success response:</strong> HTTP 200 with the computed balance</p>
+     * <pre>{@code
+     * {"giftCardId":"uuid-123","balance":25.00}
+     * }</pre>
+     *
+     * <p><strong>Unknown gift card:</strong> HTTP 200 with a balance of {@code 0}, since no events carry its
+     * tag and the fold returns its identity value.</p>
+     *
+     * @param giftCardId the unique identifier of the gift card whose balance should be calculated
+     * @return CompletableFuture containing the gift card's calculated balance
+     */
+    @GetMapping("/{giftCardId}/balance")
+    public CompletableFuture<GiftCardBalance> getGiftCardBalance(@PathVariable("giftCardId") String giftCardId) {
+        return giftCardEventReader.source(giftCardId, BigDecimal.ZERO, (balance, event) ->
+                        switch (event.type().qualifiedName().localName()) {
+                            case "GiftCardIssuedEvent" ->
+                                    balance.add(event.payloadAs(GiftCardIssuedEvent.class, converter).amount());
+                            case "GiftCardRedeemedEvent" ->
+                                    balance.subtract(event.payloadAs(GiftCardRedeemedEvent.class, converter).amount());
+                            default -> balance;
+                        })
+                .thenApply(balance -> new GiftCardBalance(giftCardId, balance));
     }
 
     /**
