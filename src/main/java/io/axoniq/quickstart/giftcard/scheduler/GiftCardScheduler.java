@@ -236,7 +236,10 @@ public class GiftCardScheduler {
             try {
                 GiftCardSummary selectedCard = activeGiftCards.get(random.nextInt(activeGiftCards.size()));
                 BigDecimal maxRedeem = selectedCard.remainingValue();
-                BigDecimal redeemAmount = BigDecimal.valueOf(1 + random.nextInt(Math.min(20, maxRedeem.intValue())));
+                // Bound must be at least 1: a sub-dollar balance truncates to 0, and random.nextInt(0) throws.
+                // A resulting amount above the balance is rejected by the guard below.
+                int redeemBound = Math.max(1, Math.min(20, maxRedeem.intValue()));
+                BigDecimal redeemAmount = BigDecimal.valueOf(1 + random.nextInt(redeemBound));
 
                 if (redeemAmount.compareTo(maxRedeem) <= 0) {
                     commandGateway.send(new RedeemGiftCardCommand(selectedCard.giftCardId(), redeemAmount)).getResultMessage().get();
