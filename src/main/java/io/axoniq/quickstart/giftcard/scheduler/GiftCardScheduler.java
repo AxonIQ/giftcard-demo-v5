@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -89,6 +90,16 @@ public class GiftCardScheduler {
      * Logger for tracking scheduled operations and debugging issues.
      */
     private static final Logger logger = LoggerFactory.getLogger(GiftCardScheduler.class);
+
+    /**
+     * Largest amount a single scheduled redemption will take from a card (a smaller balance caps it further).
+     */
+    private static final BigDecimal MAX_REDEEM = BigDecimal.valueOf(20);
+
+    /**
+     * Smallest redemption amount (one cent), so a scheduled redemption is always a positive value.
+     */
+    private static final BigDecimal MIN_REDEEM = new BigDecimal("0.01");
 
     /**
      * Axon Framework command gateway for dispatching gift card commands.
@@ -214,12 +225,10 @@ public class GiftCardScheduler {
      * that redemption operations will succeed and demonstrate valid business scenarios.</p>
      *
      * <p><strong>Realistic redemption amounts:</strong></p>
-     * <p>Redemption amounts are calculated as: {@code 1 + random(0-19)} with an
-     * upper limit of the card's remaining balance, simulating typical customer usage.</p>
-     *
-     * <p><strong>Business validation:</strong></p>
-     * <p>The method performs an additional validation check to ensure the calculated
-     * redemption amount doesn't exceed the available balance before dispatching the command.</p>
+     * <p>The amount is a random fraction of the card's balance, rounded to whole cents
+     * ({@link BigDecimal} scale 2) and capped at {@link #MAX_REDEEM $20}. It is floored at
+     * {@link #MIN_REDEEM one cent} to stay positive and clamped to the remaining balance so it is always a
+     * valid redemption, simulating typical customer usage in real currency values.</p>
      *
      * <p><strong>Defensive programming:</strong></p>
      * <p>Includes null checks and exception handling to gracefully handle edge cases
@@ -235,16 +244,17 @@ public class GiftCardScheduler {
         if (!activeGiftCards.isEmpty()) {
             try {
                 GiftCardSummary selectedCard = activeGiftCards.get(random.nextInt(activeGiftCards.size()));
-                BigDecimal maxRedeem = selectedCard.remainingValue();
-                // Bound must be at least 1: a sub-dollar balance truncates to 0, and random.nextInt(0) throws.
-                // A resulting amount above the balance is rejected by the guard below.
-                int redeemBound = Math.max(1, Math.min(20, maxRedeem.intValue()));
-                BigDecimal redeemAmount = BigDecimal.valueOf(1 + random.nextInt(redeemBound));
+                BigDecimal remaining = selectedCard.remainingValue();
+                // Redeem a random fraction of the balance, rounded to cents and capped at MAX_REDEEM. The final
+                // max()/min() keep the amount positive and never exceeding the remaining balance.
+                BigDecimal redeemAmount = remaining.min(MAX_REDEEM)
+                        .multiply(BigDecimal.valueOf(random.nextDouble()))
+                        .setScale(2, RoundingMode.HALF_UP)
+                        .max(MIN_REDEEM)
+                        .min(remaining);
 
-                if (redeemAmount.compareTo(maxRedeem) <= 0) {
-                    commandGateway.send(new RedeemGiftCardCommand(selectedCard.giftCardId(), redeemAmount)).getResultMessage().get();
-                    logger.info("Scheduled operation: Redeemed ${} from gift card {}", redeemAmount, selectedCard.giftCardId());
-                }
+                commandGateway.send(new RedeemGiftCardCommand(selectedCard.giftCardId(), redeemAmount)).getResultMessage().get();
+                logger.info("Scheduled operation: Redeemed ${} from gift card {}", redeemAmount, selectedCard.giftCardId());
             } catch (Exception e) {
                 logger.error("Error redeeming from scheduled gift card", e);
             }
