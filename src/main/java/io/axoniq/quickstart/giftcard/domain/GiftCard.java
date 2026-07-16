@@ -39,7 +39,7 @@ import java.math.BigDecimal;
  *   <li>{@link GiftCardRedeemedEvent} - Emitted when an amount is successfully redeemed</li>
  * </ul>
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @see <a href="https://docs.axoniq.io/reference-guide/">Axon Framework Reference Guide</a>
  * @since 1.0

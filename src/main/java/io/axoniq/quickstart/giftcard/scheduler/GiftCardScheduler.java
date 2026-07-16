@@ -74,7 +74,7 @@ import java.util.UUID;
  * is not registered as a bean and no scheduled operations run. This is useful for tests that need a quiet
  * event store without background activity.</p>
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @see IssueGiftCardCommand
  * @see RedeemGiftCardCommand

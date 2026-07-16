@@ -50,7 +50,7 @@ import java.util.function.BiFunction;
  * @see EventStore
  * @see org.axonframework.messaging.core.MessageStream#reduce(Object, BiFunction)
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @since 1.0
  */

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  *
  * @see GiftCardEventReader
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @since 1.0
  */

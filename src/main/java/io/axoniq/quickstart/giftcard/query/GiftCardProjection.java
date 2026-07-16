@@ -41,7 +41,7 @@ import java.util.Optional;
  * @see FindAllGiftCardsQuery
  * @see <a href="https://docs.axoniq.io/reference-guide/">Axon Framework Reference Guide</a>
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @since 1.0
  */

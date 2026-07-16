@@ -32,7 +32,7 @@ import java.math.BigDecimal;
  *
  * @param giftCardId the unique identifier of the existing gift card to redeem from
  * @param amount     the monetary amount to redeem (must be positive and not exceed remaining balance)
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @see GiftCard
  * @see io.axoniq.quickstart.giftcard.event.GiftCardRedeemedEvent

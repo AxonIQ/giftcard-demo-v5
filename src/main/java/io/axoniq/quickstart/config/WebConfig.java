@@ -62,7 +62,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
  * @see ServerResponse
  * @see ClassPathResource
  *
- * @author AxonIQ Quickstart
+ * @author Axoniq Quickstart
  * @version 1.0
  * @since 1.0
  */
