@@ -1,5 +1,7 @@
 package io.axoniq.quickstart.giftcard.query;
 
+import org.axonframework.messaging.queryhandling.annotation.Query;
+
 /**
  * Query for retrieving all gift cards from the system.
  *
@@ -44,5 +46,6 @@ package io.axoniq.quickstart.giftcard.query;
  * @version 1.0
  * @since 1.0
  */
+@Query(namespace = "io.axoniq.quickstart.giftcard")
 public record FindAllGiftCardsQuery() {
 }

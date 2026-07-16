@@ -149,7 +149,8 @@ public class GiftCardController {
         String giftCardId = UUID.randomUUID().toString();
         return commandGateway.send(new IssueGiftCardCommand(giftCardId, request.amount()))
                 .getResultMessage()
-                .thenApply(result -> ResponseEntity.ok(giftCardId));
+                .thenApply(result -> ResponseEntity.ok(giftCardId))
+                .exceptionally(throwable -> ResponseEntity.badRequest().body(throwable.getMessage()));
     }
 
     /**

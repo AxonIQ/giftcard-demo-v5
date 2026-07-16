@@ -48,6 +48,12 @@ import java.math.BigDecimal;
 public class GiftCard {
 
     /**
+     * Whether this gift card has been issued. Sourced from the {@link GiftCardIssuedEvent} and used to reject
+     * a second issuance of the same identifier and to reject redemptions against a card that does not exist.
+     */
+    private boolean issued = false;
+
+    /**
      * The remaining balance on this gift card.
      * This value decreases with each redemption and is never negative.
      */
@@ -81,6 +87,9 @@ public class GiftCard {
      */
     @CommandHandler
     public void handle(IssueGiftCardCommand command, EventAppender appender) {
+        if (issued) {
+            throw new IllegalStateException("Gift card already issued");
+        }
         if (command.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Gift card amount must be positive");
         }
@@ -108,6 +117,9 @@ public class GiftCard {
      */
     @CommandHandler
     public void handle(RedeemGiftCardCommand command, EventAppender appender) {
+        if (!issued) {
+            throw new IllegalStateException("Gift card does not exist");
+        }
         if (command.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Redeem amount must be positive");
         }
@@ -130,6 +142,7 @@ public class GiftCard {
      */
     @EventSourcingHandler
     public void on(GiftCardIssuedEvent event) {
+        this.issued = true;
         this.remainingValue = event.amount();
     }
 

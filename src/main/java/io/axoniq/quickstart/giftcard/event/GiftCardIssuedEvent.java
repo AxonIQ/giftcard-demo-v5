@@ -2,6 +2,7 @@ package io.axoniq.quickstart.giftcard.event;
 
 import io.axoniq.quickstart.giftcard.domain.GiftCard;
 import org.axonframework.eventsourcing.annotation.EventTag;
+import org.axonframework.messaging.eventhandling.annotation.Event;
 
 import java.math.BigDecimal;
 
@@ -39,5 +40,6 @@ import java.math.BigDecimal;
  * @version 1.0
  * @since 1.0
  */
+@Event(namespace = "io.axoniq.quickstart.giftcard")
 public record GiftCardIssuedEvent(@EventTag String giftCardId, BigDecimal amount) {
 }

@@ -27,7 +27,7 @@ import java.util.UUID;
  * Sourcing implementation.</p>
  *
  * <p><strong>Operational pattern:</strong></p>
- * <p>The scheduler runs every 30 seconds and performs probabilistic operations:</p>
+ * <p>The scheduler runs every 5 seconds and performs probabilistic operations:</p>
  * <ul>
  *   <li><strong>70% chance</strong>: Issues a new gift card with random amount ($10-$100)</li>
  *   <li><strong>50% chance</strong>: Redeems from an existing gift card (if any exist)</li>
@@ -117,7 +117,7 @@ public class GiftCardScheduler {
     }
 
     /**
-     * Main scheduled method that performs random gift card operations every 30 seconds.
+     * Main scheduled method that performs random gift card operations every 5 seconds.
      *
      * <p>This method orchestrates the demonstration activity by:</p>
      * <ol>
@@ -129,7 +129,7 @@ public class GiftCardScheduler {
      *
      * <p><strong>Scheduling configuration:</strong></p>
      * <ul>
-     *   <li>Fixed rate: 30 seconds between executions</li>
+     *   <li>Fixed rate: 5 seconds between executions</li>
      *   <li>Automatic retry: Spring handles failed executions</li>
      *   <li>Thread safety: Each execution runs in isolation</li>
      * </ul>

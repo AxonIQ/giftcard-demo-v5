@@ -1,6 +1,7 @@
 package io.axoniq.quickstart.giftcard.command;
 
 import io.axoniq.quickstart.giftcard.domain.GiftCard;
+import org.axonframework.messaging.commandhandling.annotation.Command;
 import org.axonframework.modelling.annotation.TargetEntityId;
 
 import java.math.BigDecimal;
@@ -32,5 +33,6 @@ import java.math.BigDecimal;
  * @version 1.0
  * @since 1.0
  */
+@Command(namespace = "io.axoniq.quickstart.giftcard", routingKey = "giftCardId")
 public record IssueGiftCardCommand(@TargetEntityId String giftCardId, BigDecimal amount) {
 }

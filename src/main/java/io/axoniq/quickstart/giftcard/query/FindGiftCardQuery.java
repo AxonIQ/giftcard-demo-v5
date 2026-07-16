@@ -1,5 +1,7 @@
 package io.axoniq.quickstart.giftcard.query;
 
+import org.axonframework.messaging.queryhandling.annotation.Query;
+
 /**
  * Query for retrieving a specific gift card by its unique identifier.
  *
@@ -36,5 +38,6 @@ package io.axoniq.quickstart.giftcard.query;
  * @version 1.0
  * @since 1.0
  */
+@Query(namespace = "io.axoniq.quickstart.giftcard")
 public record FindGiftCardQuery(String giftCardId) {
 }
