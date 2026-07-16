@@ -4,6 +4,7 @@ import io.axoniq.quickstart.giftcard.domain.GiftCard;
 import io.axoniq.quickstart.giftcard.event.GiftCardIssuedEvent;
 import io.axoniq.quickstart.giftcard.event.GiftCardRedeemedEvent;
 import org.axonframework.messaging.eventhandling.annotation.EventHandler;
+import org.axonframework.messaging.eventhandling.replay.annotation.ResetHandler;
 import org.axonframework.messaging.queryhandling.QueryUpdateEmitter;
 import org.axonframework.messaging.queryhandling.annotation.QueryHandler;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -57,6 +58,8 @@ public class GiftCardProjection {
             "SELECT gift_card_id, remaining_value, initial_value FROM gift_card_summary WHERE gift_card_id = ?";
     private static final String SELECT_ALL =
             "SELECT gift_card_id, remaining_value, initial_value FROM gift_card_summary";
+    private static final String DELETE_ALL =
+            "DELETE FROM gift_card_summary";
 
     private static final RowMapper<GiftCardSummary> ROW_MAPPER = (rs, rowNum) -> new GiftCardSummary(
             rs.getString("gift_card_id"),
@@ -131,6 +134,20 @@ public class GiftCardProjection {
     @QueryHandler
     public GiftCardSummaryList handle(FindAllGiftCardsQuery query) {
         return new GiftCardSummaryList(jdbcTemplate.query(SELECT_ALL, ROW_MAPPER));
+    }
+
+    /**
+     * Clears the read model when the event processor is reset, before events are replayed.
+     *
+     * <p>The {@link #on(GiftCardRedeemedEvent, QueryUpdateEmitter) redeem handler} applies a <em>relative</em>
+     * update ({@code remaining_value = remaining_value - amount}), which is only correct when each event is
+     * processed once. A reset replays the whole event stream, so any surviving rows would have their
+     * redemptions subtracted a second time. Deleting all rows first lets the replay rebuild the read model from
+     * a clean slate.</p>
+     */
+    @ResetHandler
+    public void onReset() {
+        jdbcTemplate.update(DELETE_ALL);
     }
 
     private Optional<GiftCardSummary> findById(String giftCardId) {
