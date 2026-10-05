@@ -1,0 +1,46 @@
+services:
+  axonserver:
+    image: docker.axoniq.io/axoniq/axonserver:2026.1.4
+    hostname: axonserver
+    environment:
+      # Axoniq Platform connection: Axon Server gets its license from, and is managed by, Axoniq Platform.
+      # The token is read from the (git-ignored) .env file next to this compose file; see .env.example.
+      # Compose refuses to start when it is missing.
+      - axoniq_platform_authentication=${AXONIQ_PLATFORM_AUTHENTICATION:?Set AXONIQ_PLATFORM_AUTHENTICATION in .env (copy .env.example)}
+    ports:
+      - "8024:8024" # HTTP / UI
+      - "8124:8124" # gRPC (used by the GiftCard app and by Insights)
+    volumes:
+      - axonserver-data:/axonserver/data
+      - axonserver-events:/axonserver/events
+      - axonserver-log:/axonserver/log
+      # Tunable settings; loaded on top of the image's own axonserver.properties.
+      - ./docker/axonserver/axonserver.properties:/axonserver/config/axonserver.properties:ro
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8024/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  insights:
+    image: docker.axoniq.io/axoniq/axoniq-insights:1.1.0
+    depends_on:
+      axonserver:
+        condition: service_healthy
+    environment:
+      # Same Axoniq Platform token as Axon Server. Overrides insights.platform.authentication from the
+      # mounted application.properties, so the token never has to be written into that file.
+      - INSIGHTS_PLATFORM_AUTHENTICATION=${AXONIQ_PLATFORM_AUTHENTICATION:?Set AXONIQ_PLATFORM_AUTHENTICATION in .env (copy .env.example)}
+    ports:
+      # Insights listens on 8080 inside the container; exposed on 8081 so it doesn't clash with the GiftCard app.
+      - "8081:8080"
+    volumes:
+      - insights-data:/insights/data
+      - ./docker/insights/application.properties:/insights/config/application.properties:ro
+
+volumes:
+  axonserver-data:
+  axonserver-events:
+  axonserver-log:
+  insights-data:

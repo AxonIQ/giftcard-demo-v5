@@ -17,3 +17,9 @@
 *.iml
 # VS Code
 .vscode/
+
+# Environment-specific secrets (never commit these)
+# Axoniq Platform token for docker-compose.yml; copy .env.example to .env and fill it in
+.env
+# Axoniq Platform credentials for the GiftCard app (Spring Boot reads ./application.properties from the working dir)
+/application.properties
