@@ -5,7 +5,7 @@ import io.axoniq.quickstart.giftcard.command.RedeemGiftCardCommand;
 import io.axoniq.quickstart.giftcard.event.GiftCardIssuedEvent;
 import io.axoniq.quickstart.giftcard.event.GiftCardRedeemedEvent;
 import org.axonframework.eventsourcing.annotation.EventSourcingHandler;
-import org.axonframework.eventsourcing.annotation.reflection.EntityCreator;
+import org.axonframework.eventsourcing.annotation.reflection.ForcedEntityCreator;
 import org.axonframework.extension.spring.stereotype.EventSourced;
 import org.axonframework.messaging.commandhandling.annotation.CommandHandler;
 import org.axonframework.messaging.eventhandling.gateway.EventAppender;
@@ -63,7 +63,7 @@ public class GiftCard {
      * Default constructor required by Axon Framework for DCB model reconstruction.
      * This constructor is used internally by the framework and should not be called directly.
      */
-    @EntityCreator
+    @ForcedEntityCreator
     protected GiftCard() {
     }
 
